@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operations Research &amp; Midpoint Lab — AlfandoXeon</title>
+    <meta name="description" content="Operations Research lab with graphical Linear Programming, Transportation Problem algorithms, and precision numerical analysis. Developed by AlfandoXeon.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Google Material Symbols Outlined -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="stel.css">
+</head>
+<body>
+
+    <!-- Custom Futuristic Magnetic Reticle & Glow Dot -->
+    <div class="custom-cursor" id="customCursor" aria-hidden="true">
+        <div class="cursor-dot" id="cursorDot"></div>
+        <div class="cursor-ring" id="cursorRing"></div>
+    </div>
+
+    <!-- Dynamic Futuristic Cursor Background -->
+    <div class="futuristic-bg" id="cursorBg" aria-hidden="true">
+        <div class="cyber-grid" id="cyberGrid"></div>
+        <div class="cursor-spotlight" id="cursorSpotlight"></div>
+        <div class="parallax-orb orb-primary" id="orbPrimary"></div>
+        <div class="parallax-orb orb-cyan" id="orbCyan"></div>
+        <div class="parallax-orb orb-indigo" id="orbIndigo"></div>
+        <canvas id="ambientCanvas"></canvas>
+    </div>
+
+    <!-- Application Wrapper -->
+    <div class="app-layout">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-badge">
+                <span class="badge-dot"></span>
+                <span>Operations Research &amp; Mathematics Suite</span>
+            </div>
+            
+            <h1 class="header-title">Operations Research Lab</h1>
+            
+            <p class="header-desc">
+                Interactive linear programming with real graphical analysis, transportation problem modeling, and precision midpoint calculations.
+            </p>
+            
+            <div class="author-tag">
+                <span class="author-label">Developed by</span>
+                <span class="author-name">AlfandoXeon</span>
+                <span class="material-symbols-outlined author-verified">verified</span>
+            </div>
+        </header>
+
+        <!-- Suite Main Navigation -->
+        <nav class="suite-tabs" aria-label="Operations Research Suite Selection">
+            <button type="button" class="suite-tab-btn active" id="tabLP" onclick="switchSuite('linear-programming')">
+                <span class="material-symbols-outlined">insights</span>
+                <span>Linear Programming</span>
+            </button>
+            <button type="button" class="suite-tab-btn" id="tabTP" onclick="switchSuite('transportation')">
+                <span class="material-symbols-outlined">local_shipping</span>
+                <span>Transportation Problem</span>
+            </button>
+            <button type="button" class="suite-tab-btn" id="tabMidpoint" onclick="switchSuite('midpoint')">
+                <span class="material-symbols-outlined">linear_scale</span>
+                <span>Midpoint &amp; Median</span>
+            </button>
+        </nav>
+
+        <!-- ========================================================
+             MODULE 1: LINEAR PROGRAMMING (GRAPHICAL METHOD)
+             ======================================================== -->
+        <main class="card-container suite-section" id="sectionLP">
+            <div class="section-title-bar">
+                <div class="section-heading">
+                    <span class="material-symbols-outlined heading-icon">show_chart</span>
+                    <div>
+                        <h2>Linear Programming (Graphical Method)</h2>
+                        <p class="section-sub">Solve 2-variable optimization problems with real-time feasible region plotting.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Objective Function Setup -->
+            <div class="form-block">
+                <label class="block-label">Objective Function</label>
+                <div class="lp-obj-row">
+                    <select id="lpOptType" class="select-input" onchange="solveLinearProgramming()">
+                        <option value="max">Maximize (Max)</option>
+                        <option value="min">Minimize (Min)</option>
+                    </select>
+                    <span class="math-label">Z =</span>
+                    <div class="coeff-group">
+                        <input type="number" id="lpC1" value="3" step="any" class="short-input" onchange="solveLinearProgramming()">
+                        <span class="var-tag">X₁</span>
+                    </div>
+                    <span class="math-label">+</span>
+                    <div class="coeff-group">
+                        <input type="number" id="lpC2" value="5" step="any" class="short-input" onchange="solveLinearProgramming()">
+                        <span class="var-tag">X₂</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Constraints Setup -->
+            <div class="form-block">
+                <div class="block-header-flex">
+                    <label class="block-label">Constraints (Subject to X₁, X₂ ≥ 0)</label>
+                    <button type="button" class="subtle-btn" onclick="addConstraintRow()">
+                        <span class="material-symbols-outlined btn-icon-sm">add_circle</span>
+                        <span>Add Constraint</span>
+                    </button>
+                </div>
+
+                <div class="constraints-list" id="lpConstraintsList">
+                    <!-- Populated dynamically or initially with 3 standard constraints -->
+                </div>
+
+                <div class="quick-bar">
+                    <span class="quick-title">Presets:</span>
+                    <button type="button" class="quick-pill" onclick="loadLPPreset('production')">Production Scheduling</button>
+                    <button type="button" class="quick-pill" onclick="loadLPPreset('resource')">Resource Allocation</button>
+                    <button type="button" class="quick-pill" onclick="loadLPPreset('diet')">Diet Minimization</button>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button type="button" class="primary-button" onclick="solveLinearProgramming()">
+                    <span class="material-symbols-outlined btn-icon">auto_graph</span>
+                    <span>Solve &amp; Plot Graphical Model</span>
+                </button>
+            </div>
+
+            <!-- Real Graphic Canvas Visualizer -->
+            <div class="graphic-card">
+                <div class="graphic-header">
+                    <span class="graphic-title">Interactive Feasible Region &amp; Optimal Coordinate Graph</span>
+                    <div class="graphic-legend">
+                        <span class="legend-item"><span class="legend-color legend-feasible"></span> Feasible Region</span>
+                        <span class="legend-item"><span class="legend-color legend-optimal"></span> Optimal Point Z*</span>
+                        <span class="legend-item"><span class="legend-color legend-obj"></span> Iso-profit Line</span>
+                    </div>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="lpCanvas" width="680" height="420"></canvas>
+                </div>
+            </div>
+
+            <!-- LP Result Card -->
+            <div class="result-card" id="lpResultCard">
+                <div class="result-top">
+                    <span class="result-label">OPTIMAL SOLUTION FOUND</span>
+                    <button type="button" class="copy-action" onclick="copyLPResult()">
+                        <span class="material-symbols-outlined copy-icon">content_copy</span>
+                        <span>Copy Coordinates</span>
+                    </button>
+                </div>
+                <div class="result-display">
+                    <div class="result-main">
+                        <span class="result-prefix">Z* =</span>
+                        <span class="result-value" id="lpResultZ">66</span>
+                    </div>
+                    <p class="result-summary" id="lpResultCoords">Optimal Decision Point: (X₁* = 3, X₂* = 12)</p>
+                </div>
+
+                <!-- Step-by-Step Calculation Breakdown -->
+                <div class="steps-container" id="lpFormulaBox">
+                    <button type="button" class="steps-toggle" onclick="toggleLPFormula()">
+                        <span class="steps-title-wrap">
+                            <span class="material-symbols-outlined steps-icon">format_list_numbered</span>
+                            <span>Detailed Mathematical Breakdown</span>
+                        </span>
+                        <span class="material-symbols-outlined chevron-icon" id="lpFormulaChevron">expand_more</span>
+                    </button>
+                    <div class="steps-content" id="lpFormulaBody"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ========================================================
+             MODULE 2: TRANSPORTATION PROBLEM
+             ======================================================== -->
+        <main class="card-container suite-section hidden" id="sectionTP">
+            <div class="section-title-bar">
+                <div class="section-heading">
+                    <span class="material-symbols-outlined heading-icon">local_shipping</span>
+                    <div>
+                        <h2>Transportation Problem Solver</h2>
+                        <p class="section-sub">Compute optimal shipping allocations and minimum cost distributions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Method & Preset Selection -->
+            <div class="form-block">
+                <div class="block-header-flex">
+                    <label class="block-label">Algorithm Method</label>
+                    <div class="quick-bar inline">
+                        <span class="quick-title">Presets:</span>
+                        <button type="button" class="quick-pill" onclick="loadTPPreset('logistics')">3 Sources × 4 Destinations</button>
+                        <button type="button" class="quick-pill" onclick="loadTPPreset('warehouse')">3 Sources × 3 Destinations</button>
+                    </div>
+                </div>
+                <select id="tpMethod" class="select-input full-width" onchange="solveTransportation()">
+                    <option value="vam">Vogel's Approximation Method (VAM) — Highly Recommended</option>
+                    <option value="least-cost">Least Cost Method (LCM / Matrix Minimum)</option>
+                    <option value="north-west">North-West Corner Rule (NWCR)</option>
+                </select>
+            </div>
+
+            <!-- Transportation Cost & Capacity Matrix -->
+            <div class="form-block">
+                <label class="block-label">Unit Shipping Costs ($/unit), Supply &amp; Demand Requirements</label>
+                <div class="table-responsive">
+                    <table class="matrix-table" id="tpMatrixTable">
+                        <!-- Populated by JS -->
+                    </table>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button type="button" class="primary-button" onclick="solveTransportation()">
+                    <span class="material-symbols-outlined btn-icon">calculate</span>
+                    <span>Solve Transportation Allocations</span>
+                </button>
+            </div>
+
+            <!-- Transportation Result Section -->
+            <div class="result-card" id="tpResultCard">
+                <div class="result-top">
+                    <span class="result-label" id="tpResultTag">TOTAL TRANSPORTATION COST</span>
+                    <button type="button" class="copy-action" onclick="copyTPResult()">
+                        <span class="material-symbols-outlined copy-icon">content_copy</span>
+                        <span>Copy Total</span>
+                    </button>
+                </div>
+                <div class="result-display">
+                    <div class="result-main">
+                        <span class="result-prefix">Total =</span>
+                        <span class="result-value" id="tpResultCost">$0</span>
+                    </div>
+                    <p class="result-summary" id="tpResultSummary">All supply and demand requirements satisfied.</p>
+                </div>
+
+                <!-- Final Allocation Table -->
+                <div class="allocation-view-block">
+                    <span class="alloc-title">Optimal Route Allocations [Allocated Units @ Unit Cost]:</span>
+                    <div class="table-responsive">
+                        <table class="matrix-table allocation-table" id="tpAllocationTable">
+                            <!-- Populated by JS -->
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Calculation Breakdown -->
+                <div class="steps-container" id="tpFormulaBox">
+                    <button type="button" class="steps-toggle" onclick="toggleTPFormula()">
+                        <span class="steps-title-wrap">
+                            <span class="material-symbols-outlined steps-icon">format_list_numbered</span>
+                            <span>Algorithm Allocation Log &amp; Summation Breakdown</span>
+                        </span>
+                        <span class="material-symbols-outlined chevron-icon" id="tpFormulaChevron">expand_more</span>
+                    </button>
+                    <div class="steps-content" id="tpFormulaBody"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ========================================================
+             MODULE 3: MIDPOINT & MEDIAN (PRESERVED)
+             ======================================================== -->
+        <main class="card-container suite-section hidden" id="sectionMidpoint">
+            <!-- Mode Navigation Tabs -->
+            <nav class="mode-tabs" aria-label="Calculation Mode">
+                <div class="tab-slider" id="tabSlider"></div>
+                <button type="button" class="tab-item active" id="tabTwoNumbers" onclick="switchMode('two-numbers')">
+                    <span class="material-symbols-outlined tab-icon">linear_scale</span>
+                    <span>Two Values</span>
+                </button>
+                <button type="button" class="tab-item" id="tabDataset" onclick="switchMode('dataset')">
+                    <span class="material-symbols-outlined tab-icon">format_list_numbered</span>
+                    <span>Data Sequence (Median)</span>
+                </button>
+            </nav>
+
+            <!-- Mode 1: Two Numbers -->
+            <section class="panel" id="panelTwoNumbers">
+                <div class="inputs-grid">
+                    <div class="field-group">
+                        <label for="num1" class="field-label">
+                            <span class="field-indicator">A</span>
+                            <span>Value A</span>
+                        </label>
+                        <div class="input-box">
+                            <input type="number" id="num1" placeholder="e.g. 10" step="any" required>
+                        </div>
+                    </div>
+
+                    <button type="button" class="swap-action" id="swapBtn" title="Swap values" onclick="swapInputs()">
+                        <span class="material-symbols-outlined">swap_horiz</span>
+                    </button>
+
+                    <div class="field-group">
+                        <label for="num2" class="field-label">
+                            <span class="field-indicator">B</span>
+                            <span>Value B</span>
+                        </label>
+                        <div class="input-box">
+                            <input type="number" id="num2" placeholder="e.g. 60" step="any" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-bar">
+                    <span class="quick-title">Presets:</span>
+                    <button type="button" class="quick-pill" onclick="setQuickValues(0, 100)">0 &amp; 100</button>
+                    <button type="button" class="quick-pill" onclick="setQuickValues(-50, 50)">-50 &amp; 50</button>
+                    <button type="button" class="quick-pill" onclick="randomizeInputs()">
+                        <span class="material-symbols-outlined pill-icon">shuffle</span>
+                        <span>Random</span>
+                    </button>
+                    <button type="button" class="quick-pill pill-reset" onclick="resetInputs()">
+                        <span class="material-symbols-outlined pill-icon">restart_alt</span>
+                        <span>Reset</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Mode 2: Dataset / Median -->
+            <section class="panel hidden" id="panelDataset">
+                <div class="field-group full-width">
+                    <label for="inputDataset" class="field-label">
+                        <span class="field-indicator">N</span>
+                        <span>Values (Comma or space separated)</span>
+                    </label>
+                    <div class="input-box">
+                        <input type="text" id="inputDataset" placeholder="e.g. 12, 24, 37, 45, 68" value="10, 25, 38, 45, 62, 79, 91">
+                    </div>
+                </div>
+
+                <div class="quick-bar">
+                    <span class="quick-title">Presets:</span>
+                    <button type="button" class="quick-pill" onclick="setDatasetPreset('odd')">Odd Sequence (7 items)</button>
+                    <button type="button" class="quick-pill" onclick="setDatasetPreset('even')">Even Sequence (6 items)</button>
+                    <button type="button" class="quick-pill" onclick="randomizeDataset()">
+                        <span class="material-symbols-outlined pill-icon">shuffle</span>
+                        <span>Random</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Submit Button -->
+            <div class="action-row">
+                <button type="button" class="primary-button" id="calculateBtn" onclick="q()">
+                    <span class="material-symbols-outlined btn-icon">calculate</span>
+                    <span id="btnText">Calculate Midpoint</span>
+                </button>
+            </div>
+
+            <!-- Result Section -->
+            <section class="result-card" id="resultContainer">
+                <div class="result-top">
+                    <span class="result-label" id="resultTag">MIDPOINT</span>
+                    <button type="button" class="copy-action" id="copyBtn" onclick="copyResult()" title="Copy to clipboard">
+                        <span class="material-symbols-outlined copy-icon">content_copy</span>
+                        <span>Copy</span>
+                    </button>
+                </div>
+
+                <div class="result-display">
+                    <div class="result-main">
+                        <span class="result-prefix">=</span>
+                        <span class="result-value" id="resultNumber">35</span>
+                    </div>
+                    <p class="result-summary" id="output1">The midpoint between 10 and 60 is 35.</p>
+                </div>
+
+                <!-- Number Line Visualization (Mode 1) -->
+                <div class="scale-visualizer" id="visualizerContainer">
+                    <div class="scale-header">
+                        <div class="scale-col col-left">
+                            <span class="scale-sub">Value A</span>
+                            <span class="scale-num" id="visValA">10</span>
+                        </div>
+                        <div class="scale-col col-mid">
+                            <span class="scale-sub-mid">Midpoint</span>
+                            <span class="scale-num-mid" id="visValMid">35</span>
+                        </div>
+                        <div class="scale-col col-right">
+                            <span class="scale-sub">Value B</span>
+                            <span class="scale-num" id="visValB">60</span>
+                        </div>
+                    </div>
+
+                    <div class="scale-rail">
+                        <div class="rail-bar"></div>
+                        <div class="rail-track" id="railTrack"></div>
+                        <div class="rail-pin pin-left"></div>
+                        <div class="rail-pin pin-mid" id="railPinMid"></div>
+                        <div class="rail-pin pin-right"></div>
+                    </div>
+
+                    <div class="scale-footer">
+                        <span class="distance-pill" id="deltaBadge">Equal distance: 25</span>
+                    </div>
+                </div>
+
+                <!-- Sorted Array Visualizer (Mode 2) -->
+                <div class="array-visualizer hidden" id="datasetVisualizerContainer">
+                    <span class="array-title">Sorted Data &amp; Median Position:</span>
+                    <div class="array-chips" id="datasetChips"></div>
+                </div>
+
+                <!-- Step-by-Step Breakdown -->
+                <div class="steps-container" id="formulaBox">
+                    <button type="button" class="steps-toggle" onclick="toggleFormula()">
+                        <span class="steps-title-wrap">
+                            <span class="material-symbols-outlined steps-icon">info</span>
+                            <span>Calculation Breakdown</span>
+                        </span>
+                        <span class="material-symbols-outlined chevron-icon" id="formulaChevron">expand_more</span>
+                    </button>
+                    <div class="steps-content" id="formulaBody">
+                        <div class="step-item" id="formulaStep1">1. Formula: M = (A + B) / 2</div>
+                        <div class="step-item" id="formulaStep2">2. Calculation: (10 + 60) / 2 = 70 / 2</div>
+                        <div class="step-item highlight" id="formulaStep3">3. Final Result: M = 35</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section class="history-panel" id="historySection">
+                <div class="history-bar">
+                    <div class="history-heading">
+                        <span class="material-symbols-outlined history-icon">history</span>
+                        <span>Recent Calculations</span>
+                    </div>
+                    <button type="button" class="history-clear" onclick="clearHistory()">Clear</button>
+                </div>
+                <div class="history-entries" id="historyList">
+                    <div class="history-empty">No calculations recorded yet.</div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p class="footer-copy">
+                &copy; 2025 <strong class="footer-author">AlfandoXeon</strong>. All rights reserved.
+            </p>
+            <p class="footer-tech">
+                Operations Research mathematical modeling and real-time graphics powered by GSAP.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-card" id="toast" role="status" aria-live="polite">
+        <span class="material-symbols-outlined toast-icon" id="toastIcon">check_circle</span>
+        <span id="toastMsg">Copied to clipboard</span>
+    </div>
+
+    <!-- GSAP Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <!-- Operations Research Core Modules -->
+    <script src="src/core/LinearProgramming.js"></script>
+    <script src="src/core/Transportation.js"></script>
+    <script src="src/graphics/LPGraph.js"></script>
+
+    <!-- Application Controller -->
+    <script src="script.js"></script>
+</body>
+</html>
