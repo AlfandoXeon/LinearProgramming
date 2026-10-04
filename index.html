@@ -58,6 +58,32 @@
             </div>
         </header>
 
+        <!-- Telemetry Diagnostic Bar -->
+        <div class="telemetry-bar" aria-label="System Diagnostic Telemetry">
+            <div class="telemetry-status">
+                <span class="status-pulse-dot"></span>
+                <span class="status-text">Engine Online</span>
+            </div>
+            <div class="telemetry-metrics">
+                <div class="telemetry-metric">
+                    <span class="material-symbols-outlined metric-icon">model_training</span>
+                    <span class="metric-label">Model:</span>
+                    <span class="metric-val" id="telemetryModel">Linear Programming</span>
+                </div>
+                <div class="telemetry-metric">
+                    <span class="material-symbols-outlined metric-icon">speed</span>
+                    <span class="metric-label">Latency:</span>
+                    <span class="metric-val metric-highlight" id="latencyBadge">0.00 ms</span>
+                </div>
+            </div>
+            <div class="telemetry-actions">
+                <button type="button" class="telemetry-btn" id="telemetryResetBtn" onclick="resetCurrentSuite()" title="Reset current active module">
+                    <span class="material-symbols-outlined">restart_alt</span>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Suite Main Navigation -->
         <nav class="suite-tabs" aria-label="Operations Research Suite Selection">
             <button type="button" class="suite-tab-btn active" id="tabLP" onclick="switchSuite('linear-programming')">
@@ -141,15 +167,58 @@
             <!-- Real Graphic Canvas Visualizer -->
             <div class="graphic-card">
                 <div class="graphic-header">
-                    <span class="graphic-title">Interactive Feasible Region &amp; Optimal Coordinate Graph</span>
-                    <div class="graphic-legend">
-                        <span class="legend-item"><span class="legend-color legend-feasible"></span> Feasible Region</span>
-                        <span class="legend-item"><span class="legend-color legend-optimal"></span> Optimal Point Z*</span>
-                        <span class="legend-item"><span class="legend-color legend-obj"></span> Iso-profit Line</span>
+                    <div class="graphic-title-wrap">
+                        <span class="graphic-title">Interactive Feasible Region &amp; Optimal Coordinate Graph</span>
+                        <div class="graphic-legend">
+                            <span class="legend-item"><span class="legend-color legend-feasible"></span> Feasible Region</span>
+                            <span class="legend-item"><span class="legend-color legend-optimal"></span> Optimal Point Z*</span>
+                            <span class="legend-item"><span class="legend-color legend-obj"></span> Iso-profit Line</span>
+                        </div>
+                    </div>
+                    <div class="canvas-controls" aria-label="Graph Canvas Controls">
+                        <button type="button" class="canvas-btn" onclick="appState.lpGraph && appState.lpGraph.zoom(0.2)" title="Zoom In">
+                            <span class="material-symbols-outlined">zoom_in</span>
+                        </button>
+                        <button type="button" class="canvas-btn" onclick="appState.lpGraph && appState.lpGraph.zoom(-0.2)" title="Zoom Out">
+                            <span class="material-symbols-outlined">zoom_out</span>
+                        </button>
+                        <button type="button" class="canvas-btn" onclick="appState.lpGraph && appState.lpGraph.resetView()" title="Reset Perspective">
+                            <span class="material-symbols-outlined">fit_screen</span>
+                        </button>
+                        <button type="button" class="canvas-btn export-btn" onclick="appState.lpGraph && appState.lpGraph.exportPNG()" title="Export High-Resolution Canvas Plot">
+                            <span class="material-symbols-outlined">photo_camera</span>
+                            <span>Export PNG</span>
+                        </button>
                     </div>
                 </div>
                 <div class="canvas-wrapper">
                     <canvas id="lpCanvas" width="680" height="420"></canvas>
+                </div>
+
+                <!-- Interactive Feasible Corner Points Table -->
+                <div class="vertices-card" id="lpVerticesCard">
+                    <div class="vertices-header">
+                        <div class="vertices-title-wrap">
+                            <span class="material-symbols-outlined vertices-icon">hub</span>
+                            <span class="vertices-title">Feasible Corner Points Evaluation</span>
+                        </div>
+                        <span class="vertices-hint">Hover row to highlight point on graph</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="vertices-table">
+                            <thead>
+                                <tr>
+                                    <th>Vertex</th>
+                                    <th>Coordinates (X₁, X₂)</th>
+                                    <th>Objective Value (Z)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lpVerticesTableBody">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -247,6 +316,12 @@
                         <span class="result-value" id="tpResultCost">$0</span>
                     </div>
                     <p class="result-summary" id="tpResultSummary">All supply and demand requirements satisfied.</p>
+                </div>
+
+                <!-- Degeneracy Status Diagnostic Chip -->
+                <div class="degeneracy-bar" id="tpDegeneracyContainer">
+                    <span class="material-symbols-outlined degeneracy-icon" id="tpDegeneracyIcon">verified</span>
+                    <span class="degeneracy-text" id="tpDegeneracyBadge">Evaluating basic feasibility (m + n - 1 condition)...</span>
                 </div>
 
                 <!-- Final Allocation Table -->

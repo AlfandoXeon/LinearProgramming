@@ -1159,6 +1159,118 @@ body.cursor-canvas .cursor-ring {
 /* ==========================================================
    OPERATIONS RESEARCH SUITE STYLES
    ========================================================== */
+
+/* Telemetry Diagnostic Bar */
+.telemetry-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 18px;
+    background: rgba(15, 20, 32, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    margin-bottom: 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    flex-wrap: wrap;
+}
+
+.telemetry-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent-emerald);
+    letter-spacing: 0.03em;
+}
+
+.status-pulse-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--accent-emerald);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-emerald);
+    animation: statusPulse 2s infinite ease-in-out;
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+.telemetry-metrics {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.telemetry-metric {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-medium);
+}
+
+.metric-icon {
+    font-size: 16px;
+    color: var(--text-low);
+}
+
+.metric-label {
+    color: var(--text-low);
+    font-weight: 500;
+}
+
+.metric-val {
+    font-family: var(--font-mono);
+    color: var(--text-high);
+    font-weight: 600;
+}
+
+.metric-highlight {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.telemetry-actions {
+    display: flex;
+    align-items: center;
+}
+
+.telemetry-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-medium);
+    font-size: 0.76rem;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.telemetry-btn .material-symbols-outlined {
+    font-size: 15px;
+}
+
+.telemetry-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-hover);
+    color: #ffffff;
+}
+
 .suite-tabs {
     display: flex;
     gap: 10px;
@@ -1408,12 +1520,18 @@ body.cursor-canvas .cursor-ring {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 12px;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.graphic-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .graphic-title {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-high);
 }
@@ -1442,6 +1560,58 @@ body.cursor-canvas .cursor-ring {
 .legend-optimal { background: #eab308; border-radius: 50%; }
 .legend-obj { border-top: 2px dashed rgba(234, 179, 8, 0.8); width: 14px; height: 0; }
 
+.canvas-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.canvas-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-medium);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.canvas-btn .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.canvas-btn:hover {
+    background: var(--primary-dim);
+    border-color: var(--primary);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.canvas-btn:active {
+    transform: scale(0.95);
+}
+
+.canvas-btn.export-btn {
+    width: auto;
+    padding: 0 12px;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.35);
+    color: var(--primary-light);
+}
+
+.canvas-btn.export-btn:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
 .canvas-wrapper {
     width: 100%;
     height: 420px;
@@ -1457,6 +1627,125 @@ body.cursor-canvas .cursor-ring {
     height: 100%;
     display: block;
     cursor: crosshair;
+}
+
+/* Feasible Corner Points Table */
+.vertices-card {
+    margin-top: 18px;
+    background: rgba(11, 15, 25, 0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+}
+
+.vertices-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.vertices-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.vertices-icon {
+    font-size: 18px;
+    color: var(--primary-light);
+}
+
+.vertices-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-high);
+}
+
+.vertices-hint {
+    font-size: 0.72rem;
+    color: var(--text-low);
+    font-style: italic;
+}
+
+.vertices-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    text-align: left;
+}
+
+.vertices-table th, .vertices-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.vertices-table th {
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-low);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.vertices-table tbody tr {
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.vertices-table tbody tr:hover,
+.vertices-table tbody tr.active-graph-hover {
+    background: rgba(56, 189, 248, 0.1);
+    box-shadow: inset 3px 0 0 #38bdf8;
+}
+
+.vertices-table tbody tr.is-optimal-row {
+    background: rgba(234, 179, 8, 0.08);
+}
+
+.vertices-table tbody tr.is-optimal-row:hover,
+.vertices-table tbody tr.is-optimal-row.active-graph-hover {
+    background: rgba(234, 179, 8, 0.16);
+    box-shadow: inset 3px 0 0 #eab308;
+}
+
+.vertex-tag {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--primary-light);
+}
+
+.vertex-coord {
+    font-family: var(--font-mono);
+    color: var(--text-high);
+}
+
+.vertex-z {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.vertex-status-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: rgba(234, 179, 8, 0.18);
+    border: 1px solid #eab308;
+    color: #fde047;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.03em;
+}
+
+.vertex-status-sub {
+    color: var(--text-low);
+    font-size: 0.76rem;
 }
 
 /* Transportation Matrix Styles */
@@ -1561,6 +1850,48 @@ body.cursor-canvas .cursor-ring {
 .alloc-empty {
     color: var(--text-low);
     font-size: 0.8rem;
+}
+
+/* Degeneracy Status Diagnostic Bar */
+.degeneracy-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin: 14px 0;
+    font-size: 0.82rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    transition: all 0.25s ease;
+}
+
+.degeneracy-bar.non-degenerate {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+}
+
+.degeneracy-bar.non-degenerate .degeneracy-icon {
+    color: var(--accent-emerald);
+}
+
+.degeneracy-bar.degenerate {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fcd34d;
+}
+
+.degeneracy-bar.degenerate .degeneracy-icon {
+    color: #f59e0b;
+}
+
+.degeneracy-icon {
+    font-size: 20px;
+}
+
+.degeneracy-text {
+    font-weight: 500;
 }
 
 /* Responsive */

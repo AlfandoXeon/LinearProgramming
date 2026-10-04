@@ -210,6 +210,17 @@ function switchSuite(suiteKey) {
         }
     });
 
+    // Update Telemetry active model indicator
+    const modelLabels = {
+        'linear-programming': 'Linear Programming',
+        'transportation': 'Transportation Problem',
+        'midpoint': 'Midpoint & Median'
+    };
+    const modelBadge = document.getElementById('telemetryModel');
+    if (modelBadge && modelLabels[suiteKey]) {
+        modelBadge.innerText = modelLabels[suiteKey];
+    }
+
     // Reattach magnetic buttons on newly displayed elements
     initMagneticButtons();
 
@@ -217,7 +228,21 @@ function switchSuite(suiteKey) {
     if (suiteKey === 'linear-programming' && appState.lpGraph && appState.lpSolution) {
         setTimeout(() => {
             appState.lpGraph.draw(appState.lpSolution, true);
+            renderLPVerticesTable(appState.lpSolution);
         }, 50);
+    }
+}
+
+function resetCurrentSuite() {
+    if (appState.currentSuite === 'linear-programming') {
+        loadLPPreset('production');
+        showToast('Linear Programming reset to Production preset', 'info');
+    } else if (appState.currentSuite === 'transportation') {
+        loadTPPreset('logistics');
+        showToast('Transportation model reset to Logistics preset', 'info');
+    } else if (appState.currentSuite === 'midpoint') {
+        resetInputs();
+        showToast('Midpoint values reset', 'info');
     }
 }
 
@@ -226,6 +251,19 @@ function switchSuite(suiteKey) {
    ========================================================== */
 function initLinearProgramming() {
     appState.lpGraph = new LPGraph('lpCanvas');
+    
+    // Bidirectional vertex hover highlight synchronization
+    window.onGraphVertexHover = (index) => {
+        const rows = document.querySelectorAll('#lpVerticesTableBody tr');
+        rows.forEach(r => {
+            if (index !== null && parseInt(r.dataset.vertexIndex) === index) {
+                r.classList.add('active-graph-hover');
+            } else {
+                r.classList.remove('active-graph-hover');
+            }
+        });
+    };
+
     loadLPPreset('production');
 }
 
@@ -306,6 +344,8 @@ function removeConstraintRow(btn) {
 }
 
 function solveLinearProgramming() {
+    const t0 = performance.now();
+
     const optType = document.getElementById('lpOptType').value;
     const c1 = parseFloat(document.getElementById('lpC1').value) || 0;
     const c2 = parseFloat(document.getElementById('lpC2').value) || 0;
@@ -331,10 +371,17 @@ function solveLinearProgramming() {
     const solution = model.solve();
     appState.lpSolution = solution;
 
+    const latency = (performance.now() - t0).toFixed(2);
+    const badge = document.getElementById('latencyBadge');
+    if (badge) badge.innerText = `${latency} ms`;
+
     // Render with smooth progressive motion
     if (appState.lpGraph) {
         appState.lpGraph.draw(solution, true);
     }
+
+    // Render interactive feasible corner points table
+    renderLPVerticesTable(solution);
 
     const zEl = document.getElementById('lpResultZ');
     const coordsEl = document.getElementById('lpResultCoords');
@@ -348,6 +395,52 @@ function solveLinearProgramming() {
     }
 
     renderLPBreakdown(solution.breakdown);
+}
+
+function renderLPVerticesTable(sol) {
+    const tbody = document.getElementById('lpVerticesTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!sol || !sol.feasibleVertices || sol.feasibleVertices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-low); padding: 14px;">No feasible corner points found.</td></tr>';
+        return;
+    }
+
+    const opt = sol.optimalPoint;
+
+    sol.feasibleVertices.forEach((v, idx) => {
+        const tr = document.createElement('tr');
+        tr.dataset.vertexIndex = idx;
+        const isOpt = opt && Math.abs(v.x - opt.x) < 1e-4 && Math.abs(v.y - opt.y) < 1e-4;
+        if (isOpt) tr.classList.add('is-optimal-row');
+
+        const label = String.fromCharCode(65 + idx);
+        const statusHtml = isOpt 
+            ? `<span class="vertex-status-opt"><span class="material-symbols-outlined" style="font-size:13px;">star</span> OPTIMAL Z*</span>` 
+            : `<span class="vertex-status-sub">Feasible Corner</span>`;
+
+        tr.innerHTML = `
+            <td><span class="vertex-tag">${label}</span></td>
+            <td><span class="vertex-coord">(${v.x}, ${v.y})</span></td>
+            <td><span class="vertex-z">${v.z}</span></td>
+            <td>${statusHtml}</td>
+        `;
+
+        tr.addEventListener('mouseenter', () => {
+            if (appState.lpGraph) {
+                appState.lpGraph.highlightVertex(idx);
+            }
+        });
+
+        tr.addEventListener('mouseleave', () => {
+            if (appState.lpGraph) {
+                appState.lpGraph.highlightVertex(null);
+            }
+        });
+
+        tbody.appendChild(tr);
+    });
 }
 
 function renderLPBreakdown(steps) {
@@ -444,6 +537,8 @@ function renderTransportationInputMatrix(supply, demand, costMatrix) {
 }
 
 function solveTransportation() {
+    const t0 = performance.now();
+
     const costInputs = document.querySelectorAll('.tp-cost-cell');
     const supplyInputs = document.querySelectorAll('.tp-supply-cell');
     const demandInputs = document.querySelectorAll('.tp-demand-cell');
@@ -473,11 +568,46 @@ function solveTransportation() {
     const solution = model.solve();
     appState.tpSolution = solution;
 
+    const latency = (performance.now() - t0).toFixed(2);
+    const badge = document.getElementById('latencyBadge');
+    if (badge) badge.innerText = `${latency} ms`;
+
     const costEl = document.getElementById('tpResultCost');
     animateNumberElement(costEl, solution.totalCost, '$');
 
     document.getElementById('tpResultSummary').innerText = 
         `Method: ${method.toUpperCase()} • ${solution.isBalanced ? 'System is balanced.' : 'Balanced with dummy node.'}`;
+
+    // Degeneracy Diagnostic Evaluation: allocations vs (m + n - 1)
+    let positiveAllocations = 0;
+    const rowsCount = solution.allocation.length;
+    const colsCount = solution.allocation[0].length;
+    for (let r = 0; r < rowsCount; r++) {
+        for (let c = 0; c < colsCount; c++) {
+            if (solution.allocation[r][c] > 0) positiveAllocations++;
+        }
+    }
+    const requiredBasicVars = rowsCount + colsCount - 1;
+    const degenContainer = document.getElementById('tpDegeneracyContainer');
+    const degenIcon = document.getElementById('tpDegeneracyIcon');
+    const degenBadge = document.getElementById('tpDegeneracyBadge');
+
+    if (degenContainer && degenBadge && degenIcon) {
+        degenContainer.className = 'degeneracy-bar';
+        if (positiveAllocations === requiredBasicVars) {
+            degenContainer.classList.add('non-degenerate');
+            degenIcon.innerText = 'verified';
+            degenBadge.innerText = `Non-Degenerate Basic Feasible Solution: ${positiveAllocations} allocations = (m + n - 1 = ${requiredBasicVars}).`;
+        } else if (positiveAllocations < requiredBasicVars) {
+            degenContainer.classList.add('degenerate');
+            degenIcon.innerText = 'warning';
+            degenBadge.innerText = `Degenerate Basic Solution: ${positiveAllocations} allocations < (m + n - 1 = ${requiredBasicVars}). Requires ε perturbation for MODI index optimality.`;
+        } else {
+            degenContainer.classList.add('non-degenerate');
+            degenIcon.innerText = 'info';
+            degenBadge.innerText = `Feasible Distribution: ${positiveAllocations} allocations (m + n - 1 = ${requiredBasicVars}).`;
+        }
+    }
 
     renderTPAllocationTable(solution);
     renderTPBreakdown(solution.breakdown);
@@ -941,6 +1071,8 @@ function q() {
         return;
     }
 
+    const t0 = performance.now();
+
     const valA = document.getElementById('num1').value.trim();
     const valB = document.getElementById('num2').value.trim();
 
@@ -956,6 +1088,10 @@ function q() {
     const formatted = Number.isInteger(mid) ? mid : Number(mid.toFixed(4));
 
     appState.midpointResult = formatted;
+
+    const latency = (performance.now() - t0).toFixed(2);
+    const badge = document.getElementById('latencyBadge');
+    if (badge) badge.innerText = `${latency} ms`;
 
     document.getElementById('output1').innerText = `The midpoint between ${a} and ${b} is ${formatted}.`;
 
@@ -985,6 +1121,8 @@ function q() {
 }
 
 function cariAngkaTengah() {
+    const t0 = performance.now();
+
     const inputStr = document.getElementById('inputDataset').value.trim();
     if (!inputStr) {
         showToast('Please enter a sequence of numbers.', 'error');
@@ -1007,6 +1145,10 @@ function cariAngkaTengah() {
     const median = isEven ? (numbers[midIdx - 1] + numbers[midIdx]) / 2 : numbers[midIdx];
     const formattedMedian = Number.isInteger(median) ? median : Number(median.toFixed(4));
     appState.midpointResult = formattedMedian;
+
+    const latency = (performance.now() - t0).toFixed(2);
+    const badge = document.getElementById('latencyBadge');
+    if (badge) badge.innerText = `${latency} ms`;
 
     const summary = isEven
         ? `The median of ${len} sorted values is ${formattedMedian} (average of ${numbers[midIdx - 1]} and ${numbers[midIdx]}).`
